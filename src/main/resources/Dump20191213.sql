@@ -100,7 +100,7 @@ CREATE TABLE `products` (
 
 LOCK TABLES `products` WRITE;
 /*!40000 ALTER TABLE `products` DISABLE KEYS */;
-INSERT INTO `products` VALUES (1,'964b553b-a9af-4869-8985-2f43bb06c150. terminator.png',3500,'DVD Terminator'),(2,'2f2f8c70-26c3-46e9-ad0e-12f5af95c66d. terminator2.png',3600,'DVD Terminator 2'),(4,'ffb0012b-daaa-4de0-bb46-a8a4f65e24e0. commando.png',3200,'DVD Commando'),(5,'22b2a44f-1457-4435-8b9d-7c398e8ea446. matrix.png',4000,'DVD Matrix'),(6,'5741612c-9ccc-44d3-8f55-3b1d04ccd5a8. predator.png',3500,'Predator'),(7,'706d5d2e-c6b0-4080-afd4-6c35c1498b49. rocky4.png',3700,'Rokki4'),(8,'f1ed56cd-9413-47d1-aff8-b5478cac9c5d. default.png',2000,'Buggs Bunny'),(9,'faaf2fee-b6c8-4cb9-8de8-11fece7947b4. titanic.png',2200,'Titanic');
+INSERT INTO `products` VALUES (1,'964b553b-a9af-4869-8985-2f43bb06c150. 964b553b-a9af-4869-8985-2f43bb06c150. terminator.png',3500,'DVD Terminator'),(2,'2f2f8c70-26c3-46e9-ad0e-12f5af95c66d. terminator2.png',3600,'DVD Terminator 2'),(4,'ffb0012b-daaa-4de0-bb46-a8a4f65e24e0. commando.png',3200,'DVD Commando'),(5,'22b2a44f-1457-4435-8b9d-7c398e8ea446. matrix.png',4000,'DVD Matrix'),(6,'5741612c-9ccc-44d3-8f55-3b1d04ccd5a8. 5741612c-9ccc-44d3-8f55-3b1d04ccd5a8. predator.png',3500,'Predator'),(7,'706d5d2e-c6b0-4080-afd4-6c35c1498b49. rocky4.png',3700,'Rokki4'),(8,'f1ed56cd-9413-47d1-aff8-b5478cac9c5d. default.png',2000,'Buggs Bunny'),(9,'faaf2fee-b6c8-4cb9-8de8-11fece7947b4. titanic.png',2200,'Titanic');
 /*!40000 ALTER TABLE `products` ENABLE KEYS */;
 UNLOCK TABLES;
 
