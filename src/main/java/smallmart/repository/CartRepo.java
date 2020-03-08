@@ -13,9 +13,8 @@ import java.util.List;
 import java.util.Optional;
 
 public interface CartRepo extends CrudRepository<Cart, Long> {
-    List<Cart> findAllByUser(User user);
 
-//    Cart findByDateAfter(Date date);
+    List<Cart> findAllByUser(User user);
 
     Optional<Cart> findCartByUserAndDateAfter(User user, Date date);
 

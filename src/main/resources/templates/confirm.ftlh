@@ -31,7 +31,7 @@
         <div  class="d-flex flex-wrap bd-highlight mb-3 jumbotron jumbotron-fluid">
             <#list items! as item>
                 <div class="card my-3" style="width: 200px">
-                    <img  class="card-img-top" src="img/${item.product.filename!}" alt="No img">
+                    <img  class="card-img-top" src="${container +"/"+ item.product.filename!}" alt="No img">
 
                     <table class="table table-hover table-sm">
                         <tr>

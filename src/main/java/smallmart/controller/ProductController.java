@@ -45,7 +45,7 @@ public class ProductController {
             System.out.println("Product isNull!");
         else
             System.out.println("product.title: " + product.getTitle());
-
+//----------здесь надо вызвать UploadAsync to Azure ----------------------------------
         if(file != null && !file.getOriginalFilename().isEmpty()){
             File uploadDir = new File(uploadPath);
             if(!uploadDir.exists())

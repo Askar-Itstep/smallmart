@@ -1,6 +1,6 @@
 package smallmart.service;
 //исп-ся для принятия пакетов ajax в контроллерах
-public class Bundle {
+public class Bundle {   //пачка одинаковых товаров
     private Integer quantity;
     private Long itemId;
 

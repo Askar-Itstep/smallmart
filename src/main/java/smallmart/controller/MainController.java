@@ -1,5 +1,9 @@
 package smallmart.controller;
 
+import com.azure.storage.blob.BlobContainerClient;
+import com.azure.storage.blob.BlobServiceClient;
+import com.azure.storage.blob.BlobServiceClientBuilder;
+import com.azure.storage.blob.models.BlobItem;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,42 +47,46 @@ public class MainController {
             user = new User();
             session.setAttribute("user", user);
         }
-        model.addAttribute("user", user);   //вместо unknown
+        model.addAttribute("user", user);
+//---------AZURE STORAGE --------IMAGE PRODUCT---------------------
+        String path = "https://springsmallmart.blob.core.windows.net/img";
+        session.setAttribute("container", path);
+        session.setMaxInactiveInterval(3600);
+//        String containerName = "img";
+
+//        String connectStr = System.getenv("AZURE_STORAGE_CONN_SPRING"); //из переменной среды
+//        BlobServiceClient blobServiceClient = new BlobServiceClientBuilder().connectionString(connectStr).buildClient();
+//        blobServiceClient.listBlobContainers().forEach(c-> System.out.println(c.getName()));  //img!!!!!
+
+//        BlobContainerClient containerClient = blobServiceClient.getBlobContainerClient(containerName);
+//        for (BlobItem blobItem : containerClient.listBlobs()) {
+//            System.out.println("\t" + blobItem.getName());
+//        }
         return "main";
     }
 
 
     @Transactional
-    @PostMapping("/main")   //обработ. формы-по нажат. <Start order>
-    public  String itemPutCart(HttpSession session, @RequestBody  String itemsId){    //form
-                            //System.out.println(itemsId);
+    @PostMapping("/main")                   //обработ. формы-по нажат. <Start order>
+    public  String itemPutCart(HttpSession session, @RequestBody  String itemsId){
         if(itemsId == null){
             System.out.println("items is NULL");
-            return "error_page";
-        }
-                            //продукы корзины
-        List<Product> products = getProducts(itemsId);
-
+            return "error_page";        }
         User user = (User) session.getAttribute("user");    //для повторного захода
         if(user.getUsername() == null) {
-            user = new User();  //заполн. осталь. полей и запись в БД - при оформл. заказа в форме Cart
-            user.setUserName("client"); //будет изменено
+            user = new User();              //осталь. поля и запись в БД - при оформл. заказа в форме Cart
+            user.setUserName("client");     //изменить (для авториз. юзеров)
             user.setRoles(Collections.singleton(Role.USER));
         }
-        userRepo.save(user);
-        Date now = (Date) session.getAttribute("now");
+        userRepo.save(user);    //норм. - даже если не купит, корзина должна остаться!
+        Date now = (Date) session.getAttribute("now");  //время начала покупок
         if(now == null) {
             now = new Date();
             session.setAttribute("now", now);
         }
-        Optional<Cart> optionalCart = cartRepo.findCartByUserAndDateAfter(user, now);//в принципе не обяз.-кажд. user уникален.
-        //а)-очищать корзину до оконч. покупок
-        optionalCart.ifPresent(cart -> cartRepo.delete(cart));
-
-        List<Item> items = (List<Item>) session.getAttribute("items");
-        if(items == null)
-            items = new ArrayList<>();
-        for (Product product : products) {
+        List<Product> products = getProducts(itemsId);  //текущ. продукы корзины
+        List<Item> items = new ArrayList<>();   //коллекц. товаров корз. (пуст)
+        for (Product product : products) {      //товары добавить в коллекц. товаров
             Item item = new Item(product);
             items.add(item);
         }
@@ -88,18 +96,18 @@ public class MainController {
             cart = new Cart(items, user);
             cart.setDate(now);
         }
-        else
-            cart.setItems(items);
-                                //System.out.println(items.size());
-        Cart finalCart = cart;
-        items.forEach(i->i.setCart(finalCart));
+        else {
+//            cart.setItems(items);         //надо добавлять, а не устанавл.
+            items.forEach(cart::addItems);  //добвал. - работ. и для повторн. захода на гл. стр.
+        }
+        Cart finalCart = cart;          //не лишнее!!!!
+        items.forEach(i->i.setCart(finalCart)); //долж. быть идентич.со стр.101
+        cartRepo.save(cart);    //корз. сохр. по клику "купить"
+
         user.setCart(cart);
-        cartRepo.save(cart);    //б)-заполнять корзину снова
         userRepo.updateCartByUserId(cart, user.getId());
 
         session.setAttribute("user", user);
-        session.removeAttribute("items");
-        session.setAttribute("items", items);
         session.removeAttribute("cart");
         session.setAttribute("cart", cart);
         return "redirect:/cart";
@@ -143,6 +151,4 @@ public class MainController {
         }
         return strings;
     }
-
-
 }

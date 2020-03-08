@@ -40,26 +40,14 @@ public class OrdersController {
                     carts.addAll(carts1);
                 }
             }
-//            List<Item> finalItems = items;    //без этого работает!?-откуда cart берет items??????
-//            carts.forEach(c-> finalItems.addAll(itemRepo.findAllByCart(c)));
         }
         else {
             carts = (List<Cart>) cartRepo.findAll();
-//            carts.forEach(c-> System.out.println(c.toString()));
-            items = (List<Item>) itemRepo.findAll();
-//            List<Item> finalItems = items;
-//            carts.forEach(c->{
-//                List<Item> itemList = new ArrayList<>();
-//                finalItems.stream().filter(i->i.getCart().getId()==c.getId()).forEach(i->itemList.add(i));
-//                c.setItems(itemList);
-//            });                      //без этого тоже работает!???
         }
-//        model.addAttribute("items", itemList);
         model.addAttribute("carts", carts);
         model.addAttribute("clientname", clientName);
         return "orderList";
     }
-    //приходит из MainControll (redirect)
     @GetMapping("/myOrder") //это просто форма-модель не нужна
     public String createContactus(){
         return "myOrder";
@@ -70,6 +58,7 @@ public class OrdersController {
     public String toBuy(HttpSession session, @RequestParam Map<String, String> form, Model model){
         User user = (User)session.getAttribute("user");
         Date date = (Date) session.getAttribute("now");
+
         if(user.getUsername() == null || user.getUsername().equals("")) {
             model.addAttribute("error", " user is NULL!");
             return "error_page";
@@ -78,8 +67,8 @@ public class OrdersController {
             model.addAttribute("error", " date is NULL!");
             return "error_page";
         }
-        Long userId = user.getId();//userRepo.getMaxId();-Так нельзя при подключ. неск. юзеров
-//        System.out.println("date (orderControll: " + date);
+
+        Long userId = user.getId();
 
         for (Map.Entry<String, String> entry : form.entrySet()) {
             if(entry.getKey().contains("name"))
@@ -91,19 +80,8 @@ public class OrdersController {
             else if(entry.getKey().contains("address"))
                 userRepo.updateUserAddrress(entry.getValue(), userId);
         }
-        Cart cart = new Cart();
-        List<Item> items = new ArrayList<>();
-                                            //findCartByUserAndDateAfter(user, date);-смысла нет -
-        Optional<Cart> optionalCart = cartRepo.findByUser(user);//кажд. запись даже того же юзера уникаль.+стаб. работ.
-        if(optionalCart.isPresent()) {
-             cart = optionalCart.get();
-             items = itemRepo.findAllByCart(cart);
-        }
-        else {
-            model.addAttribute("error", "cart not found!");
-            return "error_page";
-        }
-        if(items == null || items.size()==0){
+        Cart cart = (Cart) session.getAttribute("cart");
+        if(cart.getItems()==null || cart.getItems().size()==0){
             model.addAttribute("error", "items not found!");
             return "error_page";
         }
@@ -113,8 +91,8 @@ public class OrdersController {
             model.addAttribute("error", "user not found!");
             return "error_page";
         }
-        model.addAttribute("items", items);
-        model.addAttribute("items_size", items.size());
+        model.addAttribute("items", cart.getItems());
+        model.addAttribute("items_size", cart.getItems().size());
         user = userOptional.get();
         model.addAttribute("user", user);
         return "confirm";
@@ -122,20 +100,19 @@ public class OrdersController {
 
     @Transactional
     @PostMapping("/buy")
-    public String buy(@RequestParam Map<String, String>  form, Model model){
+    public String buy(@RequestParam Map<String, String>  form, Model model, HttpSession session){
             Cart cart = new Cart();
-            for (Map.Entry<String, String> item:form.entrySet()){
-//                System.out.printf("Key: %s  Value: %s \n", item.getKey(), item.getValue());
-                if(item.getKey().contains("cartId")){
+            for (Map.Entry<String, String> item:form.entrySet())
+                if (item.getKey().contains("cartId")) {
                     Long cartId = Long.valueOf(item.getValue());
                     Optional<Cart> optionalCart = cartRepo.findById(cartId);
-                    if(optionalCart.isPresent())
+                    if (optionalCart.isPresent())
                         cart = optionalCart.get();
                 }
-            }
             cart.setQueye(true);
             cartRepo.updateQueue(cart.getId(), true);   //для манагера заказа
         model.addAttribute("cart", cart);
+        session.invalidate();
         return "buyBuy";
     }
 }

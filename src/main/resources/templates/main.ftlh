@@ -23,13 +23,14 @@
             <h2>Если вы работник магазина, то вам следует немедленно выставить товары на прилавок!</h2>
         </div>
     </#if>
-
     <h1><strong>Product list</strong></h1>
     <form   action="/main" method="post">
       <div  class="d-flex flex-wrap bd-highlight mb-3 jumbotron jumbotron-fluid">
+
           <#list products! as product>
               <div class="card my-3" style="width: 200px">
-                  <img  class="card-img-top" src="img/${product.filename!}" alt="No img">
+                  <#--<img  class="card-img-top" src="img/${ product.filename!} alt="No img">-->
+                  <img  class="card-img-top" src="${container+'/'+ product.filename!}" alt="No img">
                   <table class="table table-hover table-sm">
                       <tr>
                           <th>ID</th><td><#if product??>${product.id}</#if></td>

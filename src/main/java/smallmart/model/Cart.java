@@ -2,10 +2,7 @@ package smallmart.model;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static java.util.stream.Stream.of;
 
@@ -55,7 +52,12 @@ public class Cart implements Serializable {
         this.cost = items.stream().mapToDouble(item->item.getProduct().getPrice()).sum();
         this.items = items;
     }
-
+    public void addItems(Item ...items){
+        this.items.addAll(Arrays.asList(items));
+    }
+    public void removeItems(Item... items){
+        this.items.removeAll(Arrays.asList(items));
+    }
     public double getCost() {
         return cost;
     }
@@ -63,7 +65,15 @@ public class Cart implements Serializable {
     public void setCost(double cost) {
         this.cost = cost;
     }
-
+    public boolean resetCost(){
+        if(items == null || items.size()==0){
+            return false;
+        }
+        else {
+            cost = items.stream().mapToDouble(item->item.getProduct().getPrice()).sum();
+            return true;
+        }
+    }
     public User getUser() {
         return user;
     }
