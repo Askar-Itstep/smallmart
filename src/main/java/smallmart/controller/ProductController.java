@@ -1,5 +1,11 @@
 package smallmart.controller;
 
+import com.azure.storage.blob.BlobClient;
+import com.azure.storage.blob.BlobContainerClient;
+import com.azure.storage.blob.BlobServiceClient;
+import com.azure.storage.blob.BlobServiceClientBuilder;
+import com.azure.storage.blob.specialized.BlockBlobAsyncClient;
+import com.azure.storage.blob.specialized.BlockBlobClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -11,8 +17,11 @@ import smallmart.model.Product;
 import smallmart.repository.ItemRepo;
 import smallmart.repository.ProductRepo;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -27,16 +36,38 @@ public class ProductController {
     @Value("${upload.path}")
     private String uploadPath;
 
-    @RequestMapping(value = "/editProduct", method = RequestMethod.POST)
+    @RequestMapping(value = "/editProduct", method = RequestMethod.GET)
     public String index(@RequestParam Long editId, Model model){
         Optional<Product> product = productRepo.findById(editId);
         if (product.isPresent()) {
-            model.addAttribute("product", product);
-            return "productEdit";  //надо сделать!
+            model.addAttribute("product", product.get());
+            return "editProduct";
         } else {
             model.addAttribute("error", "Извините, информация по товару отсутствует!");
             return "errorPage";
         }
+    }
+    @PostMapping("/editProduct")
+    public String edit(Model model, @ModelAttribute Product product, @RequestParam("file") MultipartFile file) throws IOException{
+        if(product == null) {
+//            System.out.println("product.title: " + product.getTitle());
+            model.addAttribute("error", "Извините, информация по товару отсутствует!");
+            return "errorPage";
+        }
+        Optional<Product> prodOption = productRepo.findById(product.getId());
+        if(prodOption.isPresent()){
+            Product productDB = prodOption.get();
+            if(file != null) {
+//                productDB.setFilename(file.getOriginalFilename());
+                uploadOnAzure(productDB, file);
+            }
+            productDB.setPrice(product.getPrice());
+            productDB.setTitle(product.getTitle());
+            productRepo.save(productDB);
+        }
+
+        model.addAttribute("product", product);
+        return "main";
     }
 
     @PostMapping("/save")
@@ -45,17 +76,7 @@ public class ProductController {
             System.out.println("Product isNull!");
         else
             System.out.println("product.title: " + product.getTitle());
-//----------здесь надо вызвать UploadAsync to Azure ----------------------------------
-        if(file != null && !file.getOriginalFilename().isEmpty()){
-            File uploadDir = new File(uploadPath);
-            if(!uploadDir.exists())
-                uploadDir.mkdir();
-        }
-        String uuidStr = UUID.randomUUID().toString();
-        String resName = uuidStr + ". " + file.getOriginalFilename();
-        file.transferTo(new File(uploadPath + "/" + resName));
-        product.setFilename(resName);
-
+        uploadOnAzure(product, file);
         Product savedProduct = productRepo.save(product);
         if (savedProduct != null){
             List<Product> products = (List<Product>) productRepo.findAll();
@@ -66,6 +87,37 @@ public class ProductController {
             model.addAttribute("error", "Не удалось сохранить товар!");
             return "error_page";
         }
+    }
+
+    private void uploadOnAzure(@ModelAttribute Product product, @RequestParam("file") MultipartFile file) throws IOException {
+        if(file != null && !file.getOriginalFilename().isEmpty()){
+            String connectStr = System.getenv("AZURE_STORAGE_CONN_SPRING"); //из переменной среды
+            BlobServiceClient blobServiceClient = new BlobServiceClientBuilder().connectionString(connectStr).buildClient();
+            String containerName = "img";   //вынести в конфиг? - f yfabu
+            BlobContainerClient containerClient = blobServiceClient.getBlobContainerClient(containerName);
+            File path = uploadOnHDD(product, file);   //+будет записан на /D:/upload
+            BlockBlobClient blobBlockClient = containerClient.getBlobClient(path.getName()).getBlockBlobClient();
+            try(ByteArrayInputStream dataStream = new ByteArrayInputStream(Files.readAllBytes(path.toPath()))){
+                blobBlockClient.upload(dataStream, path.length());
+            }
+            catch (IOException e){
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private File uploadOnHDD(@ModelAttribute Product product, @RequestParam("file") MultipartFile file) throws IOException {
+        if(file != null && !file.getOriginalFilename().isEmpty()){
+            File uploadDir = new File(uploadPath);
+            if(!uploadDir.exists())
+                uploadDir.mkdir();
+        }
+        //String uuidStr = UUID.randomUUID().toString();String resName = uuidStr + "." +
+        String resName = file.getOriginalFilename();
+        File copy = new File(uploadPath + "/" + resName);
+        file.transferTo(copy);
+        product.setFilename(resName);
+        return copy;
     }
     @PostMapping("/delete")
     @Transactional

@@ -52,16 +52,15 @@ public class MainController {
         String path = "https://springsmallmart.blob.core.windows.net/img";
         session.setAttribute("container", path);
         session.setMaxInactiveInterval(3600);
-//        String containerName = "img";
 
+//        String containerName = "img";
 //        String connectStr = System.getenv("AZURE_STORAGE_CONN_SPRING"); //из переменной среды
 //        BlobServiceClient blobServiceClient = new BlobServiceClientBuilder().connectionString(connectStr).buildClient();
-//        blobServiceClient.listBlobContainers().forEach(c-> System.out.println(c.getName()));  //img!!!!!
-
+////        blobServiceClient.listBlobContainers().forEach(c-> System.out.println(c.getName()));  //img!!!!!
 //        BlobContainerClient containerClient = blobServiceClient.getBlobContainerClient(containerName);
-//        for (BlobItem blobItem : containerClient.listBlobs()) {
-//            System.out.println("\t" + blobItem.getName());
-//        }
+////        for (BlobItem blobItem : containerClient.listBlobs()) {
+////            System.out.println("\t" + blobItem.getName());
+////        }
         return "main";
     }
 

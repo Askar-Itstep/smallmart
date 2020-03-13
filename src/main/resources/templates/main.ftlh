@@ -5,8 +5,8 @@
     <#if isEmp>
         <div>Product save
             <form action="/save" method="post" enctype="multipart/form-data" class="form-inline">
-                <input class="form-control" style="width: 300px" type="text"  name="title" placeholder="title">
-                <input class="form-control" style="width: 200px" type="number"  name="price" placeholder="100.0">
+                <input class="form-control" style="width: 300px" type="text"  name="title" placeholder="title" value="title">
+                <input class="form-control" style="width: 200px" type="number"  name="price" placeholder="100.0" value="100">
                 <input type="hidden" value="${_csrf.token}" name="_csrf">
                 <div class="form-group col-sm-6" style="padding-right: 10px;">
                     <label for="file"></label>
@@ -33,9 +33,6 @@
                   <img  class="card-img-top" src="${container+'/'+ product.filename!}" alt="No img">
                   <table class="table table-hover table-sm">
                       <tr>
-                          <th>ID</th><td><#if product??>${product.id}</#if></td>
-                      </tr>
-                      <tr>
                           <th>Title</th><td><#if product??>${product.title}</#if></td>
                       </tr>
                       <tr>
@@ -47,6 +44,7 @@
                           <#--placeholder="1"-->
                       </tr>
                   </table>
+                  <#--EDIT - DELETE-->
                   <#if isEmp>
                       <div class="form-inline">
                           <form action="/delete" method="post" >
@@ -55,29 +53,35 @@
                               <input type="submit" class="btn btn-warning ml-2" value="Delete">
                           </form>
                           <div style="width: 5px"></div>
-                          <#--EDIT-->
-                          <form action="/editProduct" method="post" >
+
+                          <form action="/editProduct" method="get" >
                               <input type="hidden" name="_csrf" value="${_csrf.token}">
                               <input type="hidden" name="editId" value=${product.id}>
                               <input type="submit" class="btn btn-info ml-2" value="Edit">
                           </form>
                       </div>
                   </#if>
+
                   <#--ADD TO CART-->
-                  <div class="card-footer text-muted" id="div${product.id}">
-                      <div class="custom-control custom-checkbox">
-                          <input type="checkbox" class="custom-control-input"  name="itemId" id="${product.id}" value="${product.id}">
-                          <label class="custom-control-label" for="${product.id}">Add to cart</label>
+                  <#if !isEmp>
+                      <div class="card-footer text-muted" id="div${product.id}">
+                          <div class="custom-control custom-checkbox">
+                              <input type="checkbox" class="custom-control-input"  name="itemId" id="${product.id}" value="${product.id}">
+                              <label class="custom-control-label" for="${product.id}">Add to cart</label>
+                          </div>
                       </div>
-                  </div>
+                  </#if>
               </div>
               <div style="width: 10px"></div>
           </#list>
       </div>
-        <div class="d-flex justify-content-center" id="divResult">
-            <input type="submit" class="btn btn-primary"  id="btnToCart" value="Start the ordering">
-            <input type="hidden" value="${_csrf.token}" name="_csrf">
-        </div>
+        <#if !isEmp>
+            <div class="d-flex justify-content-center" id="divResult">
+                <input type="submit" class="btn btn-primary"  id="btnToCart" value="Start the ordering">
+                <input type="hidden" value="${_csrf.token}" name="_csrf">
+            </div>
+        </#if>
+
     </form>
 <br>
 
@@ -100,7 +104,7 @@
                     $(this).val(1);                 //установ. по умолч.
                 for(var i = 0; i < $(this).val(); i++){ //положить столько раз ск-ко введено в поле
                     if(!itemsId.includes(this.dataset.num)) {//проверка-если есть и кол-во и checked
-                        $(this).attr("disabled", true); //остальн. откл. и to submit
+                        $(this).attr("disabled", true); //остальн. откл. и  submit
                     }
                 }
             });
