@@ -36,9 +36,10 @@ public class ProductController {
     @Value("${upload.path}")
     private String uploadPath;
 
-    @RequestMapping(value = "/editProduct", method = RequestMethod.GET)
-    public String index(@RequestParam Long editId, Model model){
-        Optional<Product> product = productRepo.findById(editId);
+    //------------------------------ EDIT -----------------------------------------------------
+    @RequestMapping(value = "/editProduct/{editId}", method = RequestMethod.GET)
+    public String index(Model model, @PathVariable String editId){  //
+        Optional<Product> product = productRepo.findById(Long.valueOf(editId));
         if (product.isPresent()) {
             model.addAttribute("product", product.get());
             return "editProduct";
@@ -47,10 +48,11 @@ public class ProductController {
             return "errorPage";
         }
     }
+    //
     @PostMapping("/editProduct")
-    public String edit(Model model, @ModelAttribute Product product, @RequestParam("file") MultipartFile file) throws IOException{
+    public String edit(Model model, @ModelAttribute Product product, @RequestParam("file") MultipartFile file)
+            throws IOException{ //
         if(product == null) {
-//            System.out.println("product.title: " + product.getTitle());
             model.addAttribute("error", "Извините, информация по товару отсутствует!");
             return "errorPage";
         }
@@ -58,18 +60,19 @@ public class ProductController {
         if(prodOption.isPresent()){
             Product productDB = prodOption.get();
             if(file != null) {
-//                productDB.setFilename(file.getOriginalFilename());
                 uploadOnAzure(productDB, file);
             }
             productDB.setPrice(product.getPrice());
             productDB.setTitle(product.getTitle());
             productRepo.save(productDB);
         }
-
-        model.addAttribute("product", product);
+        List<Product> products = (List<Product>) productRepo.findAll();
+        model.addAttribute("products", products);
+        model.addAttribute("size", products.size());
         return "main";
     }
 
+    //---------------------------- SAVE --------------------------------------------------------------
     @PostMapping("/save")
     public String save(@ModelAttribute Product product, @RequestParam("file") MultipartFile file, Model model) throws IOException {
         if(product == null)
@@ -93,7 +96,7 @@ public class ProductController {
         if(file != null && !file.getOriginalFilename().isEmpty()){
             String connectStr = System.getenv("AZURE_STORAGE_CONN_SPRING"); //из переменной среды
             BlobServiceClient blobServiceClient = new BlobServiceClientBuilder().connectionString(connectStr).buildClient();
-            String containerName = "img";   //вынести в конфиг? - f yfabu
+            String containerName = "img";
             BlobContainerClient containerClient = blobServiceClient.getBlobContainerClient(containerName);
             File path = uploadOnHDD(product, file);   //+будет записан на /D:/upload
             BlockBlobClient blobBlockClient = containerClient.getBlobClient(path.getName()).getBlockBlobClient();
@@ -113,18 +116,21 @@ public class ProductController {
                 uploadDir.mkdir();
         }
         //String uuidStr = UUID.randomUUID().toString();String resName = uuidStr + "." +
+        String resName0 = file.getName();
         String resName = file.getOriginalFilename();
         File copy = new File(uploadPath + "/" + resName);
         file.transferTo(copy);
         product.setFilename(resName);
         return copy;
     }
-    @PostMapping("/delete")
+
+    //------------------------------ DELETE -------------------------------------------------------
+    @GetMapping("/delete/{delId}")
     @Transactional
-    public String delete(@RequestParam(required = false) Long delId, Map<String, Object> model){
-        Optional<Product> product = productRepo.findById(delId);
+    public String delete(Map<String, Object> model, @PathVariable String delId){
+        Optional<Product> product = productRepo.findById(Long.valueOf(delId));
         if(product.isPresent())
-            productRepo.deleteById(delId);
+            productRepo.deleteById(Long.valueOf(delId));
 
         List<Product> products = (List<Product>) productRepo.findAll();
         model.put("size", products.size());
