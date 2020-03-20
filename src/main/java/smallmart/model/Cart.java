@@ -1,5 +1,8 @@
 package smallmart.model;
 
+import reactor.util.function.Tuple2;
+import smallmart.repository.ProductRepo;
+
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.*;
@@ -17,6 +20,9 @@ public class Cart implements Serializable {
     @OneToMany(cascade = {CascadeType.ALL})//mappedBy="cart"
     @JoinColumn(name = "item_id")
     private List<Item> items;
+
+    //группы продуктов в корзине
+//    private List<Tuple2<Part, Integer>> parts;   //хлеб: 2, кефир:3, водка:1
 
     private double cost;    //стоимость всей корзины
 
@@ -65,13 +71,14 @@ public class Cart implements Serializable {
     public void setCost(double cost) {
         this.cost = cost;
     }
-    public boolean resetCost(){
+    public int resetCost(){
         if(items == null || items.size()==0){
-            return false;
+            cost = 0;
+            return 0;
         }
         else {
             cost = items.stream().mapToDouble(item->item.getProduct().getPrice()).sum();
-            return true;
+            return 1;
         }
     }
     public User getUser() {

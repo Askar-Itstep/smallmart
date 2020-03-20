@@ -12,7 +12,7 @@ import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 
 import javax.sql.DataSource;
 
-//по сути контроллер для формы /login (/logout)
+
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
@@ -32,8 +32,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
          //-----для всех ост. запросов - авторизация-------------
                 .anyRequest().authenticated()
                 .and()
+//                .csrf().disable()
              .formLogin()
-
                 .loginPage("/login")
                 .permitAll()
                 .and()

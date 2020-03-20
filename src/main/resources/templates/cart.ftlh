@@ -38,12 +38,3 @@
         <br>
     </@c.page>
 
-<script>
-    // $('form[name="second"]').each.on("mousedown", function (e) {
-    //
-    //     e.stopPropagation();
-    //     $('#formOne').attr("disabled", true)
-    //                 .remove();
-    // });
-
-</script>

@@ -1,9 +1,9 @@
 <#import "parts/common.ftlh" as c>
 <#include "parts/security.ftlh">
 <@c.page>
-    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
     <#if isEmp>
         <div>Product save
+            <#----------------------------------------ФОРМА № 1------------------------------------------->
             <form action="/save" method="post" enctype="multipart/form-data" class="form-inline">
                 <input class="form-control" style="width: 300px" type="text" name="title" placeholder="title"
                        value="title">
@@ -15,7 +15,7 @@
                     <input type="file" name="file" id="file" class="form-control" data-filename-placement="inside"
                            title="Выбрать файл"/>
                 </div>
-                <button class="btn btn-info" style="width: 150px" type="submit">Save</button>
+                <button type="submit" class="btn btn-info" style="width: 150px">Save</button>
             </form>
         </div>
     </#if>
@@ -27,7 +27,8 @@
         </div>
     </#if>
     <h1><strong>Product list</strong></h1>
-    <form action="/main" method="post">
+<#----------------------------------------------ФОРМА № 2-------------------------------------------------------->
+    <form action="/main" method="post" name="products">
         <div class="d-flex flex-wrap bd-highlight mb-3 jumbotron jumbotron-fluid">
 
             <#list products! as product>
@@ -72,22 +73,22 @@
                 <div style="width: 10px"></div>
             </#list>
         </div>
+
         <#if !isEmp>
             <div class="d-flex justify-content-center" id="divResult">
                 <input type="button" class="btn btn-primary" id="btnToCart" value="Start the ordering">
                 <input type="hidden" value="${_csrf.token}" name="_csrf">
             </div>
         </#if>
-
     </form>
+
     <br>
 
-    <#--===============================================================================================-->
+<#--===============================================================================================-->
 
-    <script>
+    <script type="text/javascript">
         $('#btnToCart').attr("disabled", true);
-        var itemsId = [];
-        var cart = [];
+
 
         $('input:checkbox').on('click', function (e) {
             var prodId = $(this).val()
@@ -97,58 +98,125 @@
             //------и установ. знач. по умолч. (на случ. "забывания")----
             $('.inpQuantity').each(function (ind, item) {
                 if (item.dataset.num == prodId) {//выбрать input с атрибутом равным ID-prod
-                    $(item).val(1)
+                    $(item).val(1)  //устан. знач. по умолч. (пока)
                 }
             })
         })
 
         $('#btnToCart')
-            .on('mousedown', function (e) {
-            $(':checkbox:checked').each(function (ind, item) {  //обход только чекнутых
-                // вар1
-                itemsId.push($(this).val()) //в массив кладется ID-продукта (потом добав. их кол-во)
-                //вар2
-                var party = {prodId: $(this).val(), count: 1}//и установ. знач. по умолч.
-                cart.push(party)
-            })
+            .click(function (e) {
+                //a)-----------------------------
+                $(':checkbox:checked').each(function (ind, item) {  //обход только чекнутых
+                    // вар1
+                    itemsId.push($(this).val()) //в массив кладется ID-продукта (потом добав. их кол-во)
+                    //вар2
+                    var party = {prodId: $(this).val(), count: 1}//и установ. знач. по умолч.
+                    cart.push(party)
+                })
 
-            $('.inpQuantity').each(function (ind, item) {   //кол-во единиц товара
-                //1 вар.
-                for (var i = 0; i < $(this).val(); i++) { //положить столько раз ск-ко введено в поле
-                    if (!itemsId.includes(this.dataset.num)) {//проверка-если есть и кол-во и checked
-                        $(this).attr("disabled", true); //остальн. откл. и  submit
-                    }
-                }
-                //2 вар
-                if ($(item).val() > 0) {
-                    $(cart).each(function (ind, item2) {
-                        console.log(item2.prodId)
-                        if (item.dataset.num == item2.prodId) {
-                            item2.count = $(item).val()
-                        }
+                $('.inpQuantity').each(function (ind, item) {   //кол-во единиц товара
+                    //---------1 вар.(тело: последовательность типа <num=1&num=3&itemId=2&itemId=4>---------------
+                    var id = this.dataset.num;
+                    var obj = this;
+                    $(itemsId).each((ind, item2) => {
+                        // console.log(item2)      //ID-item
+                        if (id == item2)
+                            $(obj).attr("disabled", false);
+                        else $(obj).remove()//.attr("disabled", true);
                     })
-                }
-            })
-        })
-            .mouseup(function (e) {
-                $(myForm).triggerHandler("submit")
-            })
-        let myForm = document.forms[0];
+                    //---------2 вар. (тело: массив объектов ----------------------------
+                    if ($(item).val() > 0) {
+                        $(cart).each(function (ind, item2) {
+                            // console.log(item2.prodId)
+                            if (item.dataset.num == item2.prodId) {
+                                item2.count = $(item).val()
+                            }
+                        })
+                    }
+                })
+                //b)------------
+                $(this).attr("disabled", true);
+                // tourDeCart()
+                console.log(cart)
+                console.log(JSON.stringify(cart))
+                ajaxCart(e)
+            });
 
-        $(myForm).on("submit", function (e) {
-            console.log(cart[0])
-            e.preventDefault();
+        // $(myForm).submit(function (e) {
+        //     e.preventDefault()
+        //     ajaxForm()
+        // })
+        //------------------------------------FUNCTIONS -----------------------------------------
+        var itemsId = [];
+        var cart = [];
+        var myForm = document.forms['products'];
+
+        //-------------------2-------------------
+
+        function ajaxForm() {
+            var formData = new FormData(myForm)
+            formData.append('cart', cart)
+            formData.append('itemsId', itemsId)
             $.ajax({
                 type: 'POST',
                 url: 'main',
-                data: {
-                    cartJson: $(cart).serialize()
+                processData: false,
+                contentType: false, //'application/json; charset=utf-8',
+                cache: false,
+                data: formData
+                ,success: function (data) {
+                    console.log("!!!!!!!!!")
                 },
                 error: function (xhr, status) {
-                    console.log("ERROR: " + status);
+                    alert("ERROR: " + xhr.status);
                 }
             })
-        })
+        }
 
+        //--------------------3------------------------------------------
+        function tourDeForm() {
+            $(myForm).find('input[type=number]').each((ind, item) => {
+                console.log(item)
+            })
+            $('input').each(function (ind, item) {
+                // console.log(item)
+            })
+        }
+
+        //---------------------4--------------------------------------
+        function tourDeCart() {
+            $(cart).each(function (ind, item) {
+                console.log(item)
+            })
+        }
+
+        //--------------------------5--------------------------------------
+        function ajaxCart(e) {
+            if (e != undefined) {
+                e.preventDefault();
+            }
+            $.ajax({
+                type: 'POST',
+                url: 'main',
+                dataType: false,
+                processData: false,
+                contentType: 'application/json; charset=utf-8',
+                cache: false,
+                data: JSON.stringify(cart),
+                success: function (data) {
+                    location.replace('cart')
+                },
+                error: function (xhr, status) {
+                    alert("ERROR: " + xhr.status);
+                }
+            })
+        };
+        //--------6) для ajax-запроса (без этого не работ.)--------------------------
+        var token = "${_csrf.token}"
+        $.ajaxSetup({
+            headers:{
+                'X-Csrf-Token':token
+            }
+        });
     </script>
 </@c.page>

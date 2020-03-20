@@ -2,6 +2,7 @@ package smallmart.model;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.Optional;
 
 @Entity
 @Table(name = "products")
@@ -15,8 +16,8 @@ public class Product implements Serializable {
     private String filename;    //img
 
 
-
-    public Product() {  }
+    public Product() {
+    }
 
     public Product(String title, double price) {
         this.title = title;

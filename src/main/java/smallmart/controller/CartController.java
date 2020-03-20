@@ -52,7 +52,7 @@ public class CartController {
         Item item = itemOptional.get();
         Cart cart = itemOptional.get().getCart();   //=(Cart) session.getAttribute("cart");
         cart.removeItems(item);
-        boolean flag = cart.resetCost();    //if true..
+        int flag = cart.resetCost();    //if 0 => cost = 0..
         itemRepo.delete(itemOptional.get());
 
         model.addAttribute("cart", cart);
