@@ -4,15 +4,15 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import smallmart.model.Cart;
-import smallmart.model.Role;
 import smallmart.model.User;
 
 import java.util.List;
-import java.util.Set;
+import java.util.Optional;
 
 public interface UserRepo extends CrudRepository<User, Long> {
-    List<User> findByUserName(String userName);
+    Optional<List<User>> findByUserName(String userName);
 
+    Optional<User> findFirstByUserNameAndEmail(String userName, String email);
 
     @Modifying
     @Query("update User u set u.cart = ?1 where id=?2")
@@ -40,4 +40,6 @@ public interface UserRepo extends CrudRepository<User, Long> {
 
     @Query("select max(id) from User")
     Long getMaxid();
+
+    User findByActivationCode(String code);
 }

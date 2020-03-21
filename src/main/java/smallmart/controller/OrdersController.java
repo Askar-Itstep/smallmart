@@ -30,14 +30,18 @@ public class OrdersController {
             @RequestParam(required = false, defaultValue = "") String clientName,
             Model model){
         List<Cart> carts = new ArrayList<>();   //найдем корзины
-        List<Item> items = new ArrayList<>();   //найдем вещи в этих корзинах
+//        List<Item> items = new ArrayList<>();   //найдем вещи в этих корзинах
 
-        if(clientName != null && !clientName.equals("") && !clientName.equals(" ")){
-            List<User> users = userRepo.findByUserName(clientName); //.get(0); //пусть будет 1-ый
-            for (User user : users) {
-                List<Cart> carts1 = cartRepo.findAllByUser(user);
-                if (carts1 != null && carts1.size() > 0){
-                    carts.addAll(carts1);
+        if(clientName != null && !clientName.equals("") && !clientName.equals(" ")) {
+            Optional<List<User>> optionalUsers = userRepo.findByUserName(clientName);
+
+            if (optionalUsers.isPresent()) {
+                List<User> users = optionalUsers.get();
+                for (User user : users) {
+                    List<Cart> carts1 = cartRepo.findAllByUser(user);
+                    if (carts1 != null && carts1.size() > 0) {
+                        carts.addAll(carts1);
+                    }
                 }
             }
         }

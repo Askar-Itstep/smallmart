@@ -22,9 +22,10 @@ public class User implements UserDetails {
     private String password;
     private String phone;
     private String address;
+    private String email;
+    private String activationCode;
 
-//(cascade = {CascadeType.ALL})
-    @OneToOne
+    @OneToOne(cascade = {CascadeType.ALL})
     @JoinColumn(name = "cart_id")   
     private Cart cart;
 
@@ -39,7 +40,14 @@ public class User implements UserDetails {
         this.userName = userName;
         this.password = password;
     }
-//    {
+
+    public User(String userName, String password, String email) {
+        this.userName = userName;
+        this.password = password;
+        this.email = email;
+    }
+
+    //    {
 //        password = "";
 //        userName = "client";
 //    }
@@ -55,9 +63,25 @@ public class User implements UserDetails {
         this.userName = userName;
     }
 
-//    public String getUserName() {
-//        return userName;
-//    }
+    public String getUserName() {
+        return userName;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getActivationCode() {
+        return activationCode;
+    }
+
+    public void setActivationCode(String activationCode) {
+        this.activationCode = activationCode;
+    }
 
     public String getPassword() {
         return password;

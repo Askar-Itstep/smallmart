@@ -27,7 +27,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http.authorizeRequests()
            //------началь. стр. - для всех!-------------
-                .antMatchers("/", "/main", "/registration", "/cart/**", "/buy", "/myOrder", "/confirm", "/img/**", "/static/**")
+                .antMatchers("/", "/main", "/registration", "/cart/**", "/activate/*", "/buy", "/myOrder", "/confirm", "/img/**", "/static/**")
                 .permitAll()
          //-----для всех ост. запросов - авторизация-------------
                 .anyRequest().authenticated()
