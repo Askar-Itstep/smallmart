@@ -1,6 +1,10 @@
 package smallmart.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -40,10 +44,17 @@ public class MainController {
     }
 
     @GetMapping("/main")    //по нажат. на <main page> - вывод предст. со списком продукции
-    public String main(HttpSession session, Model model) {
-        List<Product> products = (List<Product>) productRepo.findAll();
-        model.addAttribute("size", products.size());
-        model.addAttribute("products", products);
+    public String main(HttpSession session, Model model
+            ,@PageableDefault(sort = {"id"}, direction = Sort.Direction.ASC ) Pageable pageable
+    ) {
+//        List<Product> products = (List<Product>) productRepo.findAll();
+        Page page =  productRepo.findAll((org.springframework.data.domain.Pageable) pageable);//Products
+//        model.addAttribute("size", products.size());
+//        model.addAttribute("products", products);
+
+        model.addAttribute("size", page.getTotalElements());
+        model.addAttribute("page", page);
+        model.addAttribute("url", "/main");
         User user = (User) session.getAttribute("user");
         if (user == null) {
             user = new User();

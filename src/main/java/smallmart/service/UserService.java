@@ -64,8 +64,7 @@ public class UserService implements UserDetailsService {
 
         user.getRoles().clear();    //очистить список ролей юзера
         //и установ. новые
-        for (String s : form.keySet()) {    //все ключи формы (имя, роль + невидим: id, _csrf)- зачем?????
-//            System.out.println("role: " + s);
+        for (String s : form.keySet()) {    //все ключи формы (имя, роль + невидим: id, _csrf)
             if(roles.contains(s)){
                 user.getRoles().add(Role.valueOf(s));   //так добавляемая роль предопределенная - то нет проблем!
             }

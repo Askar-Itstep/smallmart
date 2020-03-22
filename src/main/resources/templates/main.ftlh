@@ -1,4 +1,5 @@
 <#import "parts/common.ftlh" as c>
+<#import "parts/pager.ftlh" as p>
 <#include "parts/security.ftlh">
 <@c.page>
     <#if isEmp>
@@ -28,10 +29,11 @@
     </#if>
     <h1><strong>Product list</strong></h1>
 <#----------------------------------------------ФОРМА № 2-------------------------------------------------------->
+    <@p.pager url page/>
     <form action="/main" method="post" name="products">
         <div class="d-flex flex-wrap bd-highlight mb-3 jumbotron jumbotron-fluid">
-
-            <#list products! as product>
+            <#--<#list products! as product>-->
+            <#list page.content as product>
                 <div class="card my-3" style="width: 200px">
                     <#--<img  class="card-img-top" src="img/${ product.filename!} alt="No img">-->
                     <img class="card-img-top" src="${container+'/'+ product.filename!}" alt="No img">
@@ -81,7 +83,7 @@
             </div>
         </#if>
     </form>
-
+    <@p.pager url page/>
     <br>
 
 <#--===============================================================================================-->
