@@ -81,4 +81,24 @@ public class UserService implements UserDetailsService {
         userRepo.save(user);
         return  true;
     }
+
+    public Long updateUserRepo(Map<String, String> form, User user) {
+        Long userId = user.getId();
+
+        for (Map.Entry<String, String> entry : form.entrySet()) {
+            if (entry.getKey().contains("name"))
+                userRepo.updateUsername(entry.getValue(), userId);
+            else if (entry.getKey().contains("email"))
+                userRepo.updatePassword(entry.getValue(), userId);
+            else if (entry.getKey().contains("phone"))
+                userRepo.updateUserPhone(entry.getValue(), userId);
+            else if (entry.getKey().contains("address"))
+                userRepo.updateUserAddrress(entry.getValue(), userId);
+        }
+        return userId;
+    }
+
+    public Optional<User> findById(Long userId) {
+        return userRepo.findById(userId);
+    }
 }

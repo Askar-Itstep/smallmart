@@ -30,12 +30,6 @@ public class RegistrationController {
             model.put("message", "User exist!");
             return "registration";
         }
-//        if(username.isEmpty()||username.equals("")||password.equals("") || password.isEmpty()){
-//            model.put("message", "No register empty!");
-//            return "registration";
-//        }
-//        User user = new User(username, password);
-
         return "redirect:/login";
     }
     @GetMapping("/activate/{code}")

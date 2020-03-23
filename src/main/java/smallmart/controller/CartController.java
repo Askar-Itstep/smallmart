@@ -12,6 +12,7 @@ import smallmart.model.Product;
 import smallmart.repository.CartRepo;
 import smallmart.repository.ItemRepo;
 import smallmart.repository.UserRepo;
+import smallmart.service.CartService;
 
 import javax.servlet.http.HttpSession;
 import java.util.ArrayList;
@@ -22,18 +23,13 @@ import java.util.Optional;
 @RequestMapping("/cart")
 public class CartController {
     @Autowired
-    private UserRepo userRepo;
-    @Autowired
-    private CartRepo cartRepo;
-    @Autowired
-    private ItemRepo itemRepo;
-
+    private CartService cartService;
 
     @GetMapping
-    public String cartEditForm(Model model, HttpSession session){
+    public String cartEditForm(Model model, HttpSession session) {
 
         Cart cart = (Cart) session.getAttribute("cart");
-        if(cart == null){
+        if (cart == null) {
             model.addAttribute("error", "Запрошенная корзина отсутствует!");
             return "error_page";
         }
@@ -43,18 +39,13 @@ public class CartController {
 
     @Transactional
     @GetMapping("{itemId}")  //remove from cart
-    public String removeFromCart(HttpSession session, @PathVariable Long itemId, Model model){
-        Optional<Item> itemOptional = itemRepo.findById(itemId);
-        if(!itemOptional.isPresent()){
+    public String removeFromCart(HttpSession session, @PathVariable Long itemId, Model model) {
+        boolean flagRemove = cartService.remove(itemId);
+        if (!flagRemove) {
             model.addAttribute("error", "Такой продукт отсутсвтует!");
             return "error_page";
         }
-        Item item = itemOptional.get();
-        Cart cart = itemOptional.get().getCart();   //=(Cart) session.getAttribute("cart");
-        cart.removeItems(item);
-        int flag = cart.resetCost();    //if 0 => cost = 0..
-        itemRepo.delete(itemOptional.get());
-
+        Cart cart = cartService.getCart(itemId);
         model.addAttribute("cart", cart);
         session.removeAttribute("cart");
         session.setAttribute("cart", cart);
@@ -62,7 +53,7 @@ public class CartController {
     }
 
     @PostMapping
-    public String beginBuy( ){//в предст. пустая форма - без исп. модели
+    public String beginBuy() {//в предст. пустая форма - без исп. модели
 //
         return "redirect:/myOrder"; //to OrderControll
     }
